@@ -1,6 +1,6 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <img alt="Vue logo" src="./assets/logo.png" class="logo">
+  <HelloWorld msg="Detect your Retina Images today for Diabetic retinopathy"/>
 </template>
 
 <script>
@@ -15,6 +15,15 @@ export default {
 </script>
 
 <style>
+
+body {
+  background-color: #f0f0f0; /* Adjust color as needed */
+}
+
+.logo {
+  width: 250px; /* or whatever size you want */
+  height: auto; /* maintains aspect ratio */
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
