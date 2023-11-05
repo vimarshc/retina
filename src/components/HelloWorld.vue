@@ -5,6 +5,7 @@
     <div>
       <img v-if="image" :src="image" alt="Uploaded" width="200" />
       <pre>{{ jsonResponse }}</pre>
+      <pre>{{ jsonResponse_1 }}</pre>
     </div>        
   </div>
 </template>
@@ -23,54 +24,66 @@ export default {
       selectedFile: null,
       image: null,
       jsonResponse: null,
+      jsonResponse_1: null,
       apiEndpoint: 'https://mfjzmldgpf.execute-api.us-east-1.amazonaws.com/dev' // Replace with your API endpoint when ready
     };
   },
   methods: {
-    onFileSelected(event) {
+    async onFileSelected(event) {
       this.selectedFile = event.target.files[0];
-      if (this.selectedFile) {
-        // Display the selected image
-        const reader = new FileReader();
-        reader.onload = e => {
-          this.image = e.target.result;
-        };
-        reader.readAsDataURL(this.selectedFile);
 
-        // Convert the selected file to Base64 and send the request
-        this.convertToBase64(this.selectedFile);
-      }
-    },
-    convertToBase64(file) {
+
+      // Always display the selected image
       const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64String = reader.result.replace('data:', '').replace(/^.+,/, '');
-        this.sendImageToApi(base64String);
+      reader.onload = e => {
+        this.image = e.target.result;
       };
-      reader.onerror = error => {
-        console.error('Error converting file to base64:', error);
-      };
-    },
-    async sendImageToApi(base64Image) {
+      reader.readAsDataURL(this.selectedFile);
+      const formData = new FormData();
+      formData.append('file', this.selectedFile, this.selectedFile.name);
+      console.log(this.selectedFile,)
+      console.log(formData)
+
+      
+
+      try {
+          const response = await axios.post('https://mfjzmldgpf.execute-api.us-east-1.amazonaws.com/dev/', formData, {
+              headers: {
+                  'Content-Type': 'multipart/form-data'
+              }
+          });
+          this.jsonResponse = response.data;
+          const prediction = JSON.parse(this.jsonResponse);
+          this.jsonResponse = prediction;
+          console.log(prediction);
+      } catch (error) {
+          console.error("There was an error uploading the file!", error);
+      }
       const payload = {
-        file: base64Image,
-        isBase64Encoded: true // This is just for example, your Lambda may not need this flag
+        isBase64Encoded: true
       };
 
       try {
-        const response = await axios.post(this.apiEndpoint, payload, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        this.jsonResponse = response.data;
-        console.log('Success:', this.jsonResponse);
+          const response = await axios.post('https://cvt96tbhde.execute-api.us-east-1.amazonaws.com/test/DR/', payload, {
+              headers: {
+                  'Content-Type': 'application/json'
+              }
+          });
+          this.jsonResponse = response.data;
+          console.log(this.jsonResponse);
+          const prediction = JSON.parse(this.jsonResponse);
+          this.jsonResponse = prediction;
+          console.log(prediction);
       } catch (error) {
-        console.error("There was an error uploading the file!", error);
-        this.jsonResponse = "Error: " + error.message;
-      }
+          console.error("There was an error uploading the file!", error);
+      }      
+
     },
+    isValidURL(string) {
+      // eslint-disable-next-line no-useless-escape
+      const res = string.match(/^(https?:\/\/(?:www\.|(?!www))[^s\.]+\.[^s]{2,}|www\.[^s]+\.[^s]{2,})$/i);
+      return res !== null;
+    }    
   }  
 }
 </script>
