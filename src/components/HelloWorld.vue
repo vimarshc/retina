@@ -30,61 +30,42 @@ export default {
   },
   methods: {
     async onFileSelected(event) {
-      this.selectedFile = event.target.files[0];
+        this.selectedFile = event.target.files[0];
 
+        const reader = new FileReader();
+        reader.onload = async e => {
+            this.image = e.target.result;
+            const base64String = e.target.result.split(',')[1];  // extract the Base64 encoded string
 
-      // Always display the selected image
-      const reader = new FileReader();
-      reader.onload = e => {
-        this.image = e.target.result;
-      };
-      reader.readAsDataURL(this.selectedFile);
-      const formData = new FormData();
-      formData.append('file', this.selectedFile, this.selectedFile.name);
-      console.log(this.selectedFile,)
-      console.log(formData)
+            const payload = {
+                image: base64String,  // include the Base64 encoded image data
+                isBase64Encoded: true
+            };
 
-      
+            try {
+                const response = await axios.post('https://cvt96tbhde.execute-api.us-east-1.amazonaws.com/test/DR/', payload, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                this.jsonResponse = response.data;
+                console.log(this.jsonResponse);
+                const prediction = JSON.parse(this.jsonResponse);
+                this.jsonResponse = prediction;
+                console.log(prediction);
+            } catch (error) {
+                console.error("There was an error uploading the file!", error);
+            }
+        };
 
-      try {
-          const response = await axios.post('https://mfjzmldgpf.execute-api.us-east-1.amazonaws.com/dev/', formData, {
-              headers: {
-                  'Content-Type': 'multipart/form-data'
-              }
-          });
-          this.jsonResponse = response.data;
-          const prediction = JSON.parse(this.jsonResponse);
-          this.jsonResponse = prediction;
-          console.log(prediction);
-      } catch (error) {
-          console.error("There was an error uploading the file!", error);
-      }
-      const payload = {
-        isBase64Encoded: true
-      };
-
-      try {
-          const response = await axios.post('https://cvt96tbhde.execute-api.us-east-1.amazonaws.com/test/DR/', payload, {
-              headers: {
-                  'Content-Type': 'application/json'
-              }
-          });
-          this.jsonResponse = response.data;
-          console.log(this.jsonResponse);
-          const prediction = JSON.parse(this.jsonResponse);
-          this.jsonResponse = prediction;
-          console.log(prediction);
-      } catch (error) {
-          console.error("There was an error uploading the file!", error);
-      }      
-
+        reader.readAsDataURL(this.selectedFile);
     },
     isValidURL(string) {
-      // eslint-disable-next-line no-useless-escape
-      const res = string.match(/^(https?:\/\/(?:www\.|(?!www))[^s\.]+\.[^s]{2,}|www\.[^s]+\.[^s]{2,})$/i);
-      return res !== null;
-    }    
-  }  
+        // eslint-disable-next-line no-useless-escape
+        const res = string.match(/^(https?:\/\/(?:www\.|(?!www))[^s\.]+\.[^s]{2,}|www\.[^s]+\.[^s]{2,})$/i);
+        return res !== null;
+    }
+}
 }
 </script>
 
